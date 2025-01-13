@@ -37,20 +37,23 @@ def main():
             with open(os.path.join(dirname, 'index.html'), 'w', encoding="utf-8") as f:
                 f.write("\n".join([
                     get_template_head(dirname),
-                    "<tr><th scope=\"row\"><img style=\"max-width:23px; margin-right:5px\" src=\"" + get_icon_base64("o.folder-home") + "\"/>" +
+                    "<tr><th scope=\"row\"><img style=\"max-width:23px; margin-right:5px\" src=\"" + 
+                        get_icon_base64("o.folder-home") + "\"/>" +
                         "<a href=\"../\">../</a></th><td>-</td><td>-</td></tr>" if dirname != "." else "",
-                        ]))
+                    ]))
                 #sort dirnames alphabetically
                 dirnames.sort()
                 for subdirname in dirnames:
-                    f.write("<tr><th scope=\"row\"><img style=\"max-width:23px; margin-right:5px\" src=\"" + get_icon_base64("o.folder") + "\"/>" + "<a href=\"" + subdirname + "/\">" +
+                    f.write("<tr><th scope=\"row\"><img style=\"max-width:23px; margin-right:5px\" src=\"" + 
+                            get_icon_base64("o.folder") + "\"/>" + "<a href=\"" + subdirname + "/\">" +
                             subdirname + "/</a></th><td>-</td><td>-</td></tr>\n")
                 #sort filenames alphabetically
                 filenames.sort()
                 for filename in filenames:
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
-                    f.write("<tr><th scope=\"row\" class=\"><img style=\"max-width:23px; margin-right:5px\" src=\"" + get_icon_base64(filename) + "\"/>" + "<a href=\"" + filename + "\">" + 
+                    f.write("<tr><th scope=\"row\"><img style=\"max-width:23px; margin-right:5px\" src=\"" + 
+                            get_icon_base64(filename) + "\"/>" + "<a href=\"" + filename + "\">" + 
                             filename + "</a></th><td>" + get_file_modified_time(path) + "</td><td>" +
                             get_file_size(path) + "</td></tr>\n")
 
@@ -107,7 +110,7 @@ def get_template_foot():
     """
     with open("/src/template/foot.html", "r", encoding="utf-8") as file:
         foot = file.read()
-    foot = foot.replace("{{buildtime}}", "at " + dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC'))
+    foot = foot.replace("{{buildtime}}", dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC'))
     return foot
 
 def get_icon_base64(filename):
