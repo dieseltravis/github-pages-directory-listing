@@ -29,6 +29,10 @@ def main():
         print("no directory specified")
         sys.exit()
 
+    with open("/src/template/row.html", "r", encoding="utf-8") as file:
+        row = file.read()
+    homeicon = get_icon_base64("o.folder-home")
+    foldericon = get_icon_base64("o.folder")
     for dirname, dirnames, filenames in os.walk('.'):
         if 'index.html' in filenames:
             print("index.html already exists, skipping...")
@@ -37,25 +41,22 @@ def main():
             with open(os.path.join(dirname, 'index.html'), 'w', encoding="utf-8") as f:
                 f.write("\n".join([
                     get_template_head(dirname),
-                    "<tr><th scope=\"row\"><img style=\"max-width:23px; margin-right:5px\" src=\"" + 
-                        get_icon_base64("o.folder-home") + "\"/>" +
-                        "<a href=\"../\">../</a></th><td>-</td><td>-</td></tr>" if dirname != "." else "",
-                    ]))
-                #sort dirnames alphabetically
+                    row.replace("{{icon}}", homeicon).replace("{{href}}", "../").replace("{{filename}}", "../").replace("{{modified}}", "").replace("{{size}}", "") if dirname != "." else "",
+                ]))
+                # sort dirnames alphabetically
                 dirnames.sort()
                 for subdirname in dirnames:
-                    f.write("<tr><th scope=\"row\"><img style=\"max-width:23px; margin-right:5px\" src=\"" + 
-                            get_icon_base64("o.folder") + "\"/>" + "<a href=\"" + subdirname + "/\">" +
-                            subdirname + "/</a></th><td>-</td><td>-</td></tr>\n")
-                #sort filenames alphabetically
+                    f.write(
+                        row.replace("{{icon}}", foldericon).replace("{{href}}", subdirname).replace("{{filename}}", subdirname).replace("{{modified}}", "").replace("{{size}}", "")
+                    )
+                # sort filenames alphabetically
                 filenames.sort()
                 for filename in filenames:
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
-                    f.write("<tr><th scope=\"row\"><img style=\"max-width:23px; margin-right:5px\" src=\"" + 
-                            get_icon_base64(filename) + "\"/>" + "<a href=\"" + filename + "\">" + 
-                            filename + "</a></th><td>" + get_file_modified_time(path) + "</td><td>" +
-                            get_file_size(path) + "</td></tr>\n")
+                    f.write(
+                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{modified}}", get_file_modified_time(path)).replace("{{size}}", get_file_size(path))
+                    )
 
                 f.write("\n".join([
                     get_template_foot(),
