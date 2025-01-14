@@ -33,11 +33,13 @@ def main():
             sys.exit()
         if len(sys.argv) > 2:
             gif_dates_input = sys.argv[2]
+            print("parsing " + gif_dates_input)
             for line in gif_dates_input.split("!"):
                 if len(line) > 1:
                     pair = line.split("|")
                     if len(pair) > 1:
                         gif_dates[pair[0]] = pair[1]
+            print("gif_dates loaded: " + str(len(gif_dates)))
         else:
             print("no GIF_DATES specified")
             sys.exit()
