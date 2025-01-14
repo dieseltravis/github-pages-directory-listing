@@ -84,7 +84,7 @@ def main():
                             '/' + filename)
                     key_name = (folder + path).replace("/.", "/").replace("./", "/").replace("//", "/")
                     fulldate = gif_dates[key_name]
-                    shortdate = dt.datetime.fromtimestamp(fulldate).strftime('%Y-%m-%d')
+                    shortdate = dt.datetime.fromisoformat(fulldate).strftime('%Y-%m-%d')
                     f.write(
                         row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename)
                             .replace("{{filename}}", filename)
