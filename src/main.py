@@ -41,13 +41,13 @@ def main():
             with open(os.path.join(dirname, 'index.html'), 'w', encoding="utf-8") as f:
                 f.write("\n".join([
                     get_template_head(dirname),
-                    row.replace("{{icon}}", homeicon).replace("{{href}}", "../").replace("{{filename}}", "../").replace("{{modified}}", "").replace("{{size}}", "") if dirname != "." else "",
+                    row.replace("{{icon}}", homeicon).replace("{{href}}", "../").replace("{{filename}}", "../").replace("{{date}}", "").replace("{{bytes}}", "0").replace("{{size}}", "") if dirname != "." else "",
                 ]))
                 # sort dirnames alphabetically
                 dirnames.sort()
                 for subdirname in dirnames:
                     f.write(
-                        row.replace("{{icon}}", foldericon).replace("{{href}}", subdirname).replace("{{filename}}", subdirname).replace("{{modified}}", "").replace("{{size}}", "")
+                        row.replace("{{icon}}", foldericon).replace("{{href}}", subdirname).replace("{{filename}}", subdirname).replace("{{date}}", "").replace("{{bytes}}", "0").replace("{{size}}", "")
                     )
                 # sort filenames alphabetically
                 filenames.sort()
@@ -55,7 +55,7 @@ def main():
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
                     f.write(
-                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{modified}}", get_file_modified_time(path)).replace("{{size}}", get_file_size(path))
+                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", get_file_created_time(path)).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
                     )
 
                 f.write("\n".join([
@@ -79,11 +79,17 @@ def get_file_size(filepath):
     return str(size)
 
 
+def get_file_created_time(filepath):
+    """
+    get file modified time
+    """
+    return dt.datetime.fromtimestamp(os.path.getctime(filepath)).strftime('%Y-%m-%d %H:%M:%S')
+    
 def get_file_modified_time(filepath):
     """
     get file modified time
     """
-    return dt.datetime.fromtimestamp(os.path.getmtime(filepath)).strftime('%Y-%m-%d %H:%M:%S UTC')
+    return dt.datetime.fromtimestamp(os.path.getmtime(filepath)).strftime('%Y-%m-%d %H:%M:%S')
     # return time.ctime(os.path.getmtime(filepath)).strftime('%X %x')
 
 
@@ -111,7 +117,7 @@ def get_template_foot():
     """
     with open("/src/template/foot.html", "r", encoding="utf-8") as file:
         foot = file.read()
-    foot = foot.replace("{{buildtime}}", dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC'))
+    foot = foot.replace("{{buildtime}}", dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     return foot
 
 def get_icon_base64(filename):
