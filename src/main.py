@@ -80,7 +80,7 @@ def main():
                 for filename in filenames:
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
-                    key_name = folder + dirname + "/" + path
+                    key_name = (folder + dirname + "/" + path).replace("/../", "/")
                     print(key_name)
                     f.write(
                         row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", gif_dates[key_name]).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
