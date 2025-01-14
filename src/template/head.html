@@ -8,6 +8,12 @@
         body {
             font-family: monospace;
         }
+        thead th {
+            cursor: pointer;
+        }
+        thead th:hover {
+            text-decoration: underline;
+        }
         tbody th, td {
             text-align: left;
         }
@@ -25,9 +31,9 @@
 <table>
     <thead>
         <tr>
-            <th><a href="?C=N;O=A">Name</a></th>
-            <th><a href="?C=M;O=A">Last modified</a></th>
-            <th><a href="?C=S;O=A">Size</a></th>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Size</th>
         </tr>
     </thead>
     <tbody>
