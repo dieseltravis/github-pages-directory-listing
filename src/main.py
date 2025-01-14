@@ -4,9 +4,6 @@ use os package to iterate through files in a directory
 """
 import os
 import sys
-#import git
-#from git.objects.commit import Commit
-#import subprocess
 import json
 import base64
 import datetime as dt
@@ -22,6 +19,7 @@ def main():
     folder = ""
     gif_dates = {}
     gif_dates_input = ""
+    
     if len(sys.argv) > 1:
         folder = sys.argv[1]
         print("changing directory to " + folder)
@@ -47,19 +45,11 @@ def main():
         print("no directory specified")
         sys.exit()
 
+    row = ""
     with open("/src/template/row.html", "r", encoding="utf-8") as file:
         row = file.read()
     homeicon = get_icon_base64("o.folder-home")
     foldericon = get_icon_base64("o.folder")
-
-    #submissionDate_fileName = {}
-    #dir_path = os.path.dirname(os.path.realpath(__file__))
-    #repo = git.Repo(dir_path)
-    #tree = repo.tree()
-    #for blob in tree.trees[1]:
-    #    commit = next(repo.iter_commits(paths=blob.path, max_count=1))
-    #    date = str(get_date(commit.committed_date))[:10]
-    #    submissionDate_fileName[blob.name] = date
     
     for dirname, dirnames, filenames in os.walk('.'):
         if 'index.html' in filenames:
@@ -69,13 +59,23 @@ def main():
             with open(os.path.join(dirname, 'index.html'), 'w', encoding="utf-8") as f:
                 f.write("\n".join([
                     get_template_head(dirname),
-                    row.replace("{{icon}}", homeicon).replace("{{href}}", "../").replace("{{filename}}", "..").replace("{{date}}", "").replace("{{bytes}}", "0").replace("{{size}}", "") if dirname != "." else "",
+                    row.replace("{{icon}}", homeicon).replace("{{href}}", "../")
+                        .replace("{{filename}}", "..")
+                        .replace("{{fulldate}}", "")
+                        .replace("{{shortdate}}", "")
+                        .replace("{{bytes}}", "0")
+                        .replace("{{size}}", "") if dirname != "." else "",
                 ]))
                 # sort dirnames alphabetically
                 dirnames.sort()
                 for subdirname in dirnames:
                     f.write(
-                        row.replace("{{icon}}", foldericon).replace("{{href}}", subdirname).replace("{{filename}}", subdirname).replace("{{date}}", "").replace("{{bytes}}", "0").replace("{{size}}", "")
+                        row.replace("{{icon}}", foldericon).replace("{{href}}", subdirname)
+                            .replace("{{filename}}", subdirname)
+                            .replace("{{fulldate}}", "")
+                            .replace("{{shortdate}}", "")
+                            .replace("{{bytes}}", "0")
+                            .replace("{{size}}", "")
                     )
                 # sort filenames alphabetically
                 filenames.sort()
@@ -83,9 +83,15 @@ def main():
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
                     key_name = (folder + path).replace("/.", "/").replace("./", "/").replace("//", "/")
-                    print(key_name)
+                    fulldate = gif_dates[key_name]
+                    shortdate = dt.datetime.fromtimestamp(fulldate).strftime('%Y-%m-%d')
                     f.write(
-                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", gif_dates[key_name]).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
+                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename)
+                            .replace("{{filename}}", filename)
+                            .replace("{{fulldate}}", fulldate)
+                            .replace("{{shortdate}}", shortdate)
+                            .replace("{{bytes}}", str(os.path.getsize(path)))
+                            .replace("{{size}}", get_file_size(path))
                     )
 
                 f.write("\n".join([
@@ -120,26 +126,6 @@ def get_file_modified_time(filepath):
     get file modified time
     """
     return dt.datetime.fromtimestamp(os.path.getmtime(filepath)).strftime('%Y-%m-%d %H:%M:%S')
-    # return time.ctime(os.path.getmtime(filepath)).strftime('%X %x')
-
-#def get_date(epoch_time):
-#    return datetime.fromtimestamp(epoch_time)
-    
-#def get_file_last_commit_date(filepath):    
-#    try:
-#        # Use `git log` to get the last commit date for the file
-#        result = subprocess.run(
-#            ["git", "log", "-1", "--format=%ci", "--", filepath],
-#            stdout=subprocess.PIPE,
-#            stderr=subprocess.PIPE,
-#            text=True,
-#            check=True
-#        )
-#        # The result will be in the format: YYYY-MM-DD HH:MM:SS +TZ
-#        return result.stdout.strip()
-#    except subprocess.CalledProcessError as e:
-#        print(f"Error getting file date: {e.stderr.strip()}")
-#        return ""
 
 def get_template_head(foldername):
     """
@@ -172,6 +158,7 @@ def get_icon_base64(filename):
     """
     get icon base64
     """
+    # TODO: look into SVG
     with open("/src/png/" + get_icon_from_filename(filename), "rb") as file:
         return "data:image/png;base64, " + base64.b64encode(file.read()).decode('ascii')
 
@@ -181,16 +168,11 @@ def get_icon_from_filename(filename):
     get icon from filename
     """
     extension = "." + filename.split(".")[-1]
-    # extension = "." + extension
-    # print(extension)
     for i in data:
         if extension in i["extension"]:
-            # print(i["icon"])
             return i["icon"] + ".png"
-    # print("no icon found")
     return "unknown.png"
 
 
 if __name__ == "__main__":
     main()
-    # get_icon_from_filename("test.txppt")
