@@ -65,7 +65,7 @@ def main():
             with open(os.path.join(dirname, 'index.html'), 'w', encoding="utf-8") as f:
                 f.write("\n".join([
                     get_template_head(dirname),
-                    row.replace("{{icon}}", homeicon).replace("{{href}}", "../").replace("{{filename}}", "../").replace("{{date}}", "").replace("{{bytes}}", "0").replace("{{size}}", "") if dirname != "." else "",
+                    row.replace("{{icon}}", homeicon).replace("{{href}}", "../").replace("{{filename}}", "..").replace("{{date}}", "").replace("{{bytes}}", "0").replace("{{size}}", "") if dirname != "." else "",
                 ]))
                 # sort dirnames alphabetically
                 dirnames.sort()
@@ -79,7 +79,7 @@ def main():
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
                     f.write(
-                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", gif_dates[path]).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
+                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", gif_dates[dirname + "/" + path]).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
                     )
 
                 f.write("\n".join([
