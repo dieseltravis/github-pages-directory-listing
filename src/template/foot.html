@@ -4,7 +4,7 @@
 	<small>{{buildtime}}</small>
 </footer>
 <script>
-	const t = (r, i) => r.children[i].innerText || r.children[i].textContent;
+	const t = (r, i) => r.children[i].dataset.sort || r.children[i].innerText || r.children[i].textContent;
 	const c = (i, d) => (a, b) => ((v1, v2) => v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2))(t(d ? a : b, i), t(d ? b : a, i));
 	document.querySelectorAll('thead th').forEach(th => {
 		const tbody = th.closest('table').querySelectorAll('tbody')[0];
