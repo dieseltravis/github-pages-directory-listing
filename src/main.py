@@ -31,10 +31,10 @@ def main():
             sys.exit()
         if len(sys.argv) > 2:
             gif_dates_input = sys.argv[2]
-            for line in gif_dates_input.split("!")
+            for line in gif_dates_input.split("!"):
                 if len(line) > 1:
                     pair = line.split("|")
-                    if len(pair) > 1;
+                    if len(pair) > 1:
                         gif_dates[pair[0]] = pair[1]
         else:
             print("no GIF_DATES specified")
