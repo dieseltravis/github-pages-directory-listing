@@ -19,13 +19,15 @@ def main():
     """
     main function
     """
+    folder = ""
     gif_dates = {}
     gif_dates_input = ""
     if len(sys.argv) > 1:
-        print("changing directory to " + sys.argv[1])
+        folder = sys.argv[1]
+        print("changing directory to " + folder)
         # add error handling to chdir
         try:
-            os.chdir(sys.argv[1])
+            os.chdir(folder)
         except OSError:
             print("Cannot change the current working Directory")
             sys.exit()
@@ -78,8 +80,10 @@ def main():
                 for filename in filenames:
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
+                    key_name = folder + dirname + "/" + path
+                    print(key_name)
                     f.write(
-                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", gif_dates[dirname + "/" + path]).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
+                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", gif_dates[key_name]).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
                     )
 
                 f.write("\n".join([
