@@ -11,6 +11,9 @@ inputs:
   FOLDER:
     description: 'folder to start index generations'
     required: true
+  GIF_DATES:
+    description: '! delimited list of filename|date pairs'
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
