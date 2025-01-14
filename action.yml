@@ -16,3 +16,4 @@ runs:
   image: 'Dockerfile'
   args:
     - ${{ inputs.FOLDER }}
+    - ${{ inputs.GIF_DATES }}
