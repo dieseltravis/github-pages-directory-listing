@@ -4,7 +4,7 @@ use os package to iterate through files in a directory
 """
 import os
 import sys
-# import time
+import subprocess
 import json
 import base64
 import datetime as dt
@@ -55,7 +55,7 @@ def main():
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
                     f.write(
-                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", get_file_created_time(path)).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
+                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", get_file_last_commit_date(path)).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
                     )
 
                 f.write("\n".join([
@@ -92,6 +92,21 @@ def get_file_modified_time(filepath):
     return dt.datetime.fromtimestamp(os.path.getmtime(filepath)).strftime('%Y-%m-%d %H:%M:%S')
     # return time.ctime(os.path.getmtime(filepath)).strftime('%X %x')
 
+def get_file_last_commit_date(filepath):
+    try:
+        # Use `git log` to get the last commit date for the file
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%ci", "--", filepath],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True
+        )
+        # The result will be in the format: YYYY-MM-DD HH:MM:SS +TZ
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"Error getting file date: {e.stderr.strip()}")
+        return ""
 
 def get_template_head(foldername):
     """
