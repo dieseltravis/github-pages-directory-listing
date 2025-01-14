@@ -4,7 +4,9 @@ use os package to iterate through files in a directory
 """
 import os
 import sys
-import subprocess
+import git
+from git.objects.commit import Commit
+#import subprocess
 import json
 import base64
 import datetime as dt
@@ -33,6 +35,18 @@ def main():
         row = file.read()
     homeicon = get_icon_base64("o.folder-home")
     foldericon = get_icon_base64("o.folder")
+
+    submissionDate_fileName = {}
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    repo = git.Repo(dir_path)
+    tree = repo.tree()
+    
+    for blob in tree.trees[1]:
+        commit = next(repo.iter_commits(paths=blob.path, max_count=1))
+        date = str(get_date(commit.committed_date))[:10]
+        submissionDate_fileName[blob.name] = date
+    
     for dirname, dirnames, filenames in os.walk('.'):
         if 'index.html' in filenames:
             print("index.html already exists, skipping...")
@@ -55,7 +69,7 @@ def main():
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
                     f.write(
-                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", get_file_last_commit_date(path)).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
+                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", submissionDate_fileName[path]).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
                     )
 
                 f.write("\n".join([
@@ -92,21 +106,24 @@ def get_file_modified_time(filepath):
     return dt.datetime.fromtimestamp(os.path.getmtime(filepath)).strftime('%Y-%m-%d %H:%M:%S')
     # return time.ctime(os.path.getmtime(filepath)).strftime('%X %x')
 
-def get_file_last_commit_date(filepath):
-    try:
-        # Use `git log` to get the last commit date for the file
-        result = subprocess.run(
-            ["git", "log", "-1", "--format=%ci", "--", filepath],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=True
-        )
-        # The result will be in the format: YYYY-MM-DD HH:MM:SS +TZ
-        return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        print(f"Error getting file date: {e.stderr.strip()}")
-        return ""
+def get_date(epoch_time):
+    return datetime.fromtimestamp(epoch_time)
+    
+#def get_file_last_commit_date(filepath):    
+#    try:
+#        # Use `git log` to get the last commit date for the file
+#        result = subprocess.run(
+#            ["git", "log", "-1", "--format=%ci", "--", filepath],
+#            stdout=subprocess.PIPE,
+#            stderr=subprocess.PIPE,
+#            text=True,
+#            check=True
+#        )
+#        # The result will be in the format: YYYY-MM-DD HH:MM:SS +TZ
+#        return result.stdout.strip()
+#    except subprocess.CalledProcessError as e:
+#        print(f"Error getting file date: {e.stderr.strip()}")
+#        return ""
 
 def get_template_head(foldername):
     """
