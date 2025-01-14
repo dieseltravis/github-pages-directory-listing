@@ -19,6 +19,8 @@ def main():
     """
     main function
     """
+    gif_dates = {}
+    gif_dates_input = ""
     if len(sys.argv) > 1:
         print("changing directory to " + sys.argv[1])
         # add error handling to chdir
@@ -26,6 +28,16 @@ def main():
             os.chdir(sys.argv[1])
         except OSError:
             print("Cannot change the current working Directory")
+            sys.exit()
+        if len(sys.argv) > 2:
+            gif_dates_input = sys.argv[2]
+            for line in gif_dates_input.split("!")
+                if len(line) > 1:
+                    pair = line.split("|")
+                    if len(pair) > 1;
+                        gif_dates[pair[0]] = pair[1]
+        else:
+            print("no GIF_DATES specified")
             sys.exit()
     else:
         print("no directory specified")
@@ -67,7 +79,7 @@ def main():
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
                     f.write(
-                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", get_file_created_time(path)).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
+                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename).replace("{{filename}}", filename).replace("{{date}}", gif_dates[path]).replace("{{bytes}}", str(os.path.getsize(path))).replace("{{size}}", get_file_size(path))
                     )
 
                 f.write("\n".join([
