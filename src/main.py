@@ -8,7 +8,7 @@ import json
 import base64
 import datetime as dt
 
-with open('/src/icons.json', encoding="utf-8") as json_file:
+with open('/src/w98.json', encoding="utf-8") as json_file:
     data = json.load(json_file)
 
 
@@ -158,9 +158,8 @@ def get_icon_base64(filename):
     """
     get icon base64
     """
-    # TODO: look into SVG
-    with open("/src/png/" + get_icon_from_filename(filename), "rb") as file:
-        return "data:image/png;base64, " + base64.b64encode(file.read()).decode('ascii')
+    with open("/src/w98/" + get_icon_from_filename(filename), "rb") as file:
+        return "data:image/png;base64," + base64.b64encode(file.read()).decode('ascii')
 
 
 def get_icon_from_filename(filename):
@@ -171,7 +170,7 @@ def get_icon_from_filename(filename):
     for i in data:
         if extension in i["extension"]:
             return i["icon"] + ".png"
-    return "unknown.png"
+    return "web-file.png"
 
 
 if __name__ == "__main__":
