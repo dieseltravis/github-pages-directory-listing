@@ -58,7 +58,7 @@ def main():
             print("index.html does not exist, generating")
             with open(os.path.join(dirname, 'index.html'), 'w', encoding="utf-8") as f:
                 f.write("\n".join([
-                    get_template_head(dirname),
+                    get_template_head((folder + dirname).replace("/.", "/").replace("./", "/").replace("//", "/")),
                     row.replace("{{icon}}", homeicon).replace("{{href}}", "../")
                         .replace("{{filename}}", "..")
                         .replace("{{fulldate}}", "")
