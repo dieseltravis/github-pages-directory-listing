@@ -37,7 +37,7 @@ jobs:
           ref: dummy-data    #checkout different branch
 
       - name: Set env var to pass in file commit dates
-        run: echo FILE_DATES=$(for f in $(git ls-files foldername/*.*); do git --no-pager log -1 --date=short --pretty=format:"$f|%ci!" -- $f ; done) >> $GITHUB_ENV
+        run: echo FILE_DATES=$(for f in $(git ls-files foldername/**); do git --no-pager log -1 --date=short --pretty=format:"$f|%ci!" -- $f ; done) >> $GITHUB_ENV
 
       - name: Generate Directory Listings
         uses: dieseltravis/github-pages-directory-listing@dieseltravis-html
