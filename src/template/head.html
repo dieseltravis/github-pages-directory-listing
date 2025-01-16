@@ -7,29 +7,34 @@
 <style>
 body {
 	font-family: monospace;
+	color: #333;
 }
 table {
-	border-bottom: groove 4px;
+	border-bottom: groove 3px;
 }
 thead th {
 	cursor: pointer;
-	border-bottom: ridge 4px;
+	border-bottom: ridge 3px;
 }
 thead th:hover {
 	text-decoration: underline;
 }
 tbody th, td {
 	text-align: left;
-	padding: 0.5rem;
+	padding: 0.3333rem;
 }
 td:last-of-type {
 	text-align: right;
+	white-space: nowrap;
 }
 img {
 	max-width: 1rem;
-	margin-right: 0.5rem;
+	margin-right: 0.3333rem;
 	vertical-align: middle;
 	image-rendering: pixelated;
+}
+small {
+	font-size: 0.5rem;
 }
 @media print { * { display: none !important; } }
 </style>
