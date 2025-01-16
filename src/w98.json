@@ -34,7 +34,8 @@
     {
         "icon": "img-wmf",
         "extension": [
-            ".wmf"
+            ".wmf",
+            ".svg"
         ]
     },
     {
