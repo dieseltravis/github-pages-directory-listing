@@ -59,7 +59,9 @@ def main():
             with open(os.path.join(dirname, 'index.html'), 'w', encoding="utf-8") as f:
                 f.write("\n".join([
                     get_template_head(("/" + folder + dirname + "/").replace("/.", "/").replace("./", "/").replace("//", "/").removesuffix("/")),
-                    row.replace("{{icon}}", homeicon).replace("{{href}}", "../")
+                    row.replace("{{icon}}", homeicon)
+                        .replace("{{type}}", "home")
+                        .replace("{{href}}", "../")
                         .replace("{{filename}}", "..")
                         .replace("{{fulldate}}", "")
                         .replace("{{shortdate}}", "")
@@ -70,7 +72,9 @@ def main():
                 dirnames.sort()
                 for subdirname in dirnames:
                     f.write(
-                        row.replace("{{icon}}", foldericon).replace("{{href}}", subdirname)
+                        row.replace("{{icon}}", foldericon)
+                            .replace("{{type}}", "folder")
+                            .replace("{{href}}", subdirname)
                             .replace("{{filename}}", subdirname)
                             .replace("{{fulldate}}", "")
                             .replace("{{shortdate}}", "")
@@ -84,9 +88,12 @@ def main():
                             '/' + filename)
                     key_name = (folder + path).replace("/.", "/").replace("./", "/").replace("//", "/")
                     fulldate = gif_dates[key_name]
+                    ext = filename.split(".")[-1]
                     shortdate = dt.datetime.fromisoformat(fulldate).strftime('%Y-%m-%d')
                     f.write(
-                        row.replace("{{icon}}", get_icon_base64(filename)).replace("{{href}}", filename)
+                        row.replace("{{icon}}", get_icon_base64(filename))
+                            .replace("{{type}}", ext)
+                            .replace("{{href}}", filename)
                             .replace("{{filename}}", filename)
                             .replace("{{fulldate}}", fulldate)
                             .replace("{{shortdate}}", shortdate)
