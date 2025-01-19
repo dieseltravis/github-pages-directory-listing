@@ -1,10 +1,19 @@
-</tbody>
+	</tbody>
 </table>
-</div>
 <footer>
-<p class="m-2 lg:m-4 text-sm">generated with <a href="https://github.com/jayanta525/github-pages-directory-listing"
-        target="_blank" class="text-blue-700">github-pages-directory-listing</a> {{buildtime}}</p>
+	<small><time>{{buildtime}}</time></small>
 </footer>
+<script>
+	const t = (r, i) => r.children[i].dataset.sort || r.children[i].innerText || r.children[i].textContent;
+	const c = (i, d) => (a, b) => ((v1, v2) => v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2))(t(d ? a : b, i), t(d ? b : a, i));
+	document.querySelectorAll('thead th').forEach(th => {
+		const tbody = th.closest('table').querySelectorAll('tbody')[0];
+		th.addEventListener('click', () => {
+			Array.from(tbody.querySelectorAll('tr'))
+				.sort(c([...th.parentNode.children].indexOf(th), this.asc = !this.asc))
+				.forEach(tr => tbody.appendChild(tr));
+	});
+});
+</script>
 </body>
-
 </html>

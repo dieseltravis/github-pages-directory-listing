@@ -1,0 +1,62 @@
+[
+    {
+        "icon": "img-gif",
+        "extension": [
+            ".gif"
+        ]
+    },
+    {
+        "icon": "img-jpg",
+        "extension": [
+            ".jpg",
+            ".jpeg",
+            ".jpe"
+        ]
+    },
+    {
+        "icon": "img-kodak",
+        "extension": [
+            ".bmp",
+            ".tiff",
+            ".tif"
+        ]
+    },
+    {
+        "icon": "img-other",
+        "extension": [
+            ".psd",
+            ".ai",
+            ".ico",
+            ".png",
+            ".webp"
+        ]
+    },
+    {
+        "icon": "img-wmf",
+        "extension": [
+            ".wmf",
+            ".svg"
+        ]
+    },
+    {
+        "icon": "web-file",
+        "extension": [
+            ".html",
+            ".md",
+            ".txt",
+            ".pdf"
+        ]
+    },
+    {
+        "icon": "dir-folder",
+        "extension": [
+            ".folder"
+        ]
+    },
+    {
+        "icon": "dir-pc",
+        "extension": [
+            ".folder-home"
+        ]
+    }
+]
