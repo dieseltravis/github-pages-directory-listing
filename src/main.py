@@ -42,7 +42,7 @@ def main():
                         file_dates[pair[0]] = pair[1]
                         folder_key = re.sub(r'[a-z0-9-]+\.[a-z]+$', '', pair[0])
                         print(folder_key)
-                        this_date = dt.datetime.fromtimestamp(pair[1])
+                        this_date = dt.datetime.fromisoformat(pair[1])
                         if not (folder_key in folder_dates) or folder_dates[folder_key] < this_date:
                             folder_dates[folder_key] = this_date
             print("file_dates loaded: " + str(len(file_dates)))
