@@ -57,7 +57,7 @@ def main():
                     else:
                         print("bad format of file|date:" + line)
                 else:
-                    print("bad format of FILE_DATES item:" + file_dates_input)
+                    print("bad format of FILE_DATES item:" + line)
             print("file_dates loaded: " + str(len(file_dates)))
             print("folder_dates loaded: " + str(len(folder_dates)))
         else:
