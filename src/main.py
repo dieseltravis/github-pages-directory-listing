@@ -80,7 +80,8 @@ def main():
                 # sort dirnames alphabetically
                 dirnames.sort()
                 for subdirname in dirnames:
-                    folder_date = folder_dates[subdirname]
+                    key_name = (folder + subdirname).replace("/.", "/").replace("./", "/").replace("//", "/")
+                    folder_date = folder_dates[key_name]
                     sort_folder_date = folder_date.strftime('%Y-%m-%d %H:%M:%S')
                     short_folder_date = folder_date.strftime('%Y-%m-%d')
 
