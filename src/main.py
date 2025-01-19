@@ -3,22 +3,24 @@
 use os package to iterate through files in a directory
 """
 import os
+import re
 import sys
 import json
 import base64
 import datetime as dt
 
+ICON_FOLDER = "/src/w98/"
 with open('/src/w98.json', encoding="utf-8") as json_file:
     data = json.load(json_file)
-
 
 def main():
     """
     main function
     """
     folder = ""
-    gif_dates = {}
-    gif_dates_input = ""
+    file_dates = {}
+    folder_dates = {}
+    file_dates_input = ""
     
     if len(sys.argv) > 1:
         folder = sys.argv[1]
@@ -30,16 +32,23 @@ def main():
             print("Cannot change the current working Directory")
             sys.exit()
         if len(sys.argv) > 2:
-            gif_dates_input = sys.argv[2]
-            print("parsing " + gif_dates_input)
-            for line in gif_dates_input.split("!"):
+            file_dates_input = sys.argv[2]
+            print("parsing " + file_dates_input)
+            for line in file_dates_input.split("!"):
                 if len(line) > 1:
                     pair = line.split("|")
                     if len(pair) > 1:
-                        gif_dates[pair[0]] = pair[1]
-            print("gif_dates loaded: " + str(len(gif_dates)))
+                        file_dates[pair[0]] = pair[1]
+                        folder_key = re.sub(r'[a-z0-9-]+\.[a-z]+$', '', pair[0])
+                        this_date = dt.datetime.fromtimestamp(pair[1])
+                        if folder_key in folder_dates
+                            if folder_dates[folder_key] < this_date
+                                folder_dates[folder_key] = this_date
+                        else
+                            folder_dates[folder_key] = this_date
+            print("file_dates loaded: " + str(len(file_dates)))
         else:
-            print("no GIF_DATES specified")
+            print("no FILE_DATES specified")
             sys.exit()
     else:
         print("no directory specified")
@@ -64,7 +73,7 @@ def main():
                         .replace("{{href}}", "../")
                         .replace("{{filename}}", "..")
                         .replace("{{sortdate}}", "-")
-                        .replace("{{fulldate}}", "")
+                        .replace("{{fulldate}}", dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
                         .replace("{{shortdate}}", "")
                         .replace("{{bytes}}", "0")
                         .replace("{{size}}", "") if dirname != "." else "",
@@ -72,14 +81,18 @@ def main():
                 # sort dirnames alphabetically
                 dirnames.sort()
                 for subdirname in dirnames:
+                    folder_date = folder_dates[key_name]
+                    sort_folder_date = folder_date.strftime('%Y-%m-%d %H:%M:%S')
+                    short_folder_date = folder_date.strftime('%Y-%m-%d')
+
                     f.write(
                         row.replace("{{icon}}", foldericon)
                             .replace("{{type}}", "folder")
                             .replace("{{href}}", subdirname)
                             .replace("{{filename}}", subdirname)
-                            .replace("{{sortdate}}", "-")
-                            .replace("{{fulldate}}", "")
-                            .replace("{{shortdate}}", "")
+                            .replace("{{sortdate}}", "-" + sort_folder_date)
+                            .replace("{{fulldate}}", sort_folder_date)
+                            .replace("{{shortdate}}", short_folder_date)
                             .replace("{{bytes}}", "0")
                             .replace("{{size}}", "")
                     )
@@ -89,7 +102,7 @@ def main():
                     path = (dirname == '.' and filename or dirname +
                             '/' + filename)
                     key_name = (folder + path).replace("/.", "/").replace("./", "/").replace("//", "/")
-                    fulldate = gif_dates[key_name]
+                    fulldate = file_dates[key_name]
                     ext = filename.split(".")[-1]
                     shortdate = dt.datetime.fromisoformat(fulldate).strftime('%Y-%m-%d')
                     f.write(
@@ -168,7 +181,7 @@ def get_icon_base64(filename):
     """
     get icon base64
     """
-    with open("/src/w98/" + get_icon_from_filename(filename), "rb") as file:
+    with open(ICON_FOLDER + get_icon_from_filename(filename), "rb") as file:
         return "data:image/png;base64," + base64.b64encode(file.read()).decode('ascii')
 
 
