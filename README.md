@@ -6,11 +6,11 @@
 
 Generate Directory Listings for Github Pages using Github Actions. 
 
-[Demo](https://github.com/jayanta525/github-pages-directory-listing#demo)
+[Demo](#demo)
 
-[Read about pages deployment action](https://github.com/jayanta525/github-pages-directory-listing/edit/main/README.md#note)
+[Read about pages deployment action](#note)
 
-[action.yml/workflow.yml](https://github.com/jayanta525/github-pages-directory-listing/blob/main/.github/workflows/main.yml)
+[action.yml/workflow.yml](https://github.com/dieseltravis/github-pages-directory-listing/blob/dieseltravis-html/.github/workflows/main.yml)
 
 ## Notable changes from original
 * very basic html, css, javascript sorting
