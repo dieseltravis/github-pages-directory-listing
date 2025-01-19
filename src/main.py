@@ -36,10 +36,12 @@ def main():
             print("parsing " + file_dates_input)
             for line in file_dates_input.split("!"):
                 if len(line) > 1:
+                    print("pair: " + line)
                     pair = line.split("|")
                     if len(pair) > 1:
                         file_dates[pair[0]] = pair[1]
                         folder_key = re.sub(r'[a-z0-9-]+\.[a-z]+$', '', pair[0])
+                        print(folder_key)
                         this_date = dt.datetime.fromtimestamp(pair[1])
                         if not (folder_key in folder_dates) or folder_dates[folder_key] < this_date:
                             folder_dates[folder_key] = this_date
