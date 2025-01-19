@@ -1,4 +1,5 @@
-# Github Pages Directory Listing
+# Github Pages Directory Listing with simpler HTML
+Original project:
 [![main](https://github.com/jayanta525/github-pages-directory-listing/actions/workflows/main.yml/badge.svg)](https://github.com/jayanta525/github-pages-directory-listing/actions/workflows/main.yml)
 [![license](https://img.shields.io/github/license/jayanta525/github-pages-directory-listing)](https://github.com/jayanta525/github-pages-directory-listing/blob/main/LICENSE)
 [![Paypal Donate](https://img.shields.io/badge/donate-paypal-00457c.svg?logo=paypal&style=plastic)](https://www.paypal.me/jayanta525)
