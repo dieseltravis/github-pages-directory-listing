@@ -118,7 +118,7 @@ Original:
 
 ![image](https://user-images.githubusercontent.com/30702133/226169193-66c27c81-fdc7-499d-88e4-1a1c8571ecce.png)
 
-This:
+This fork:
 
 ![image](https://github.com/user-attachments/assets/9790650a-ba45-4242-92e6-89f8c1b234c7)
 
@@ -129,7 +129,8 @@ Original:
 
 ![image](https://user-images.githubusercontent.com/30702133/226169252-b74d3a40-7928-4804-bd66-8292a6259531.png)
 
-This (needs work tbh):
+This fork:
 
-![image](https://github.com/user-attachments/assets/db844410-6a5a-4232-abeb-d4a459e658e0)
+![image](https://github.com/user-attachments/assets/fb2782e4-3f1c-4887-9d33-5e6e9fac63d4)
+
 
