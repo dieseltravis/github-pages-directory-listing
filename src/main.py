@@ -9,9 +9,16 @@ import json
 import base64
 import datetime as dt
 
+# TODO: set these up as params?
 ICON_FOLDER = "/src/w98/"
 with open('/src/w98.json', encoding="utf-8") as json_file:
     data = json.load(json_file)
+
+TEMPLATE_FOLDER = "/src/template/"
+SHORT_DT_FORMAT = '%Y-%m-%d'
+LONG_DT_FORMAT = '%Y-%m-%d %H:%M:%S'
+BUILD_DATE = dt.datetime.now().strftime(LONG_DT_FORMAT)
+RX_FILENAME = r'[a-z0-9-]+\.[a-z]+$'
 
 def main():
     """
@@ -38,14 +45,21 @@ def main():
                 if len(line) > 1:
                     print("pair: " + line)
                     pair = line.split("|")
-                    if len(pair) > 1:
+                    if len(pair) == 2:
                         file_dates[pair[0]] = pair[1]
-                        folder_key = re.sub(r'[a-z0-9-]+\.[a-z]+$', '', pair[0])
+                        # get just folder path
+                        folder_key = re.sub(RX_FILENAME, '', pair[0])
                         print(folder_key)
                         this_date = dt.datetime.fromisoformat(pair[1])
+                        # use latest file date for folder date
                         if not (folder_key in folder_dates) or folder_dates[folder_key] < this_date:
                             folder_dates[folder_key] = this_date
+                    else:
+                        print("bad format of file|date:" + line)
+                else:
+                    print("bad format of FILE_DATES item:" + file_dates_input)
             print("file_dates loaded: " + str(len(file_dates)))
+            print("folder_dates loaded: " + str(len(folder_dates)))
         else:
             print("no FILE_DATES specified")
             sys.exit()
@@ -54,7 +68,7 @@ def main():
         sys.exit()
 
     row = ""
-    with open("/src/template/row.html", "r", encoding="utf-8") as file:
+    with open(TEMPLATE_FOLDER + "row.html", "r", encoding="utf-8") as file:
         row = file.read()
     homeicon = get_icon_base64("o.folder-home")
     foldericon = get_icon_base64("o.folder")
@@ -66,13 +80,13 @@ def main():
             print("index.html does not exist, generating")
             with open(os.path.join(dirname, 'index.html'), 'w', encoding="utf-8") as f:
                 f.write("\n".join([
-                    get_template_head(("/" + folder + dirname + "/").replace("/.", "/").replace("./", "/").replace("//", "/").removesuffix("/")),
+                    get_template_head(get_clean_file_path("/" + folder + dirname + "/").removesuffix("/")),
                     row.replace("{{icon}}", homeicon)
                         .replace("{{type}}", "home")
                         .replace("{{href}}", "../")
                         .replace("{{filename}}", "..")
                         .replace("{{sortdate}}", "-")
-                        .replace("{{fulldate}}", dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                        .replace("{{fulldate}}", BUILD_DATE)
                         .replace("{{shortdate}}", "")
                         .replace("{{bytes}}", "0")
                         .replace("{{size}}", "") if dirname != "." else "",
@@ -80,10 +94,10 @@ def main():
                 # sort dirnames alphabetically
                 dirnames.sort()
                 for subdirname in dirnames:
-                    key_name = (folder + subdirname + "/").replace("/.", "/").replace("./", "/").replace("//", "/")
+                    key_name = get_clean_file_path(folder + subdirname + "/")
                     folder_date = folder_dates[key_name]
-                    sort_folder_date = folder_date.strftime('%Y-%m-%d %H:%M:%S')
-                    short_folder_date = folder_date.strftime('%Y-%m-%d')
+                    sort_folder_date = folder_date.strftime(LONG_DT_FORMAT)
+                    short_folder_date = folder_date.strftime(SHORT_DT_FORMAT)
 
                     f.write(
                         row.replace("{{icon}}", foldericon)
@@ -99,14 +113,13 @@ def main():
                 # sort filenames alphabetically
                 filenames.sort()
                 for filename in filenames:
-                    path = (dirname == '.' and filename or dirname +
-                            '/' + filename)
-                    key_name = (folder + path).replace("/.", "/").replace("./", "/").replace("//", "/")
+                    path = (dirname == '.' and filename or dirname + '/' + filename)
+                    key_name = get_clean_file_path(folder + path)
                     fulldate = file_dates[key_name]
                     ext = filename.split(".")[-1]
                     date_val = dt.datetime.fromisoformat(fulldate)
-                    longdate = date_val.strftime('%Y-%m-%d %H:%M:%S')
-                    shortdate = date_val.strftime('%Y-%m-%d')
+                    longdate = date_val.strftime(LONG_DT_FORMAT)
+                    shortdate = date_val.strftime(SHORT_DT_FORMAT)
                     f.write(
                         row.replace("{{icon}}", get_icon_base64(filename))
                             .replace("{{type}}", ext)
@@ -124,6 +137,9 @@ def main():
                 ]))
 
 
+def get_clean_file_path(path):
+    return path.replace("/.", "/").replace("./", "/").replace("//", "/")
+
 def get_file_size(filepath):
     """
     get file size
@@ -139,24 +155,10 @@ def get_file_size(filepath):
         return str(round((size / 1024 / 1024 / 1024), 2)) + " GB"
     return str(size)
 
-
-def get_file_created_time(filepath):
-    """
-    get file modified time
-    """
-    return dt.datetime.fromtimestamp(os.path.getctime(filepath)).strftime('%Y-%m-%d %H:%M:%S')
-    
-def get_file_modified_time(filepath):
-    """
-    get file modified time
-    """
-    return dt.datetime.fromtimestamp(os.path.getmtime(filepath)).strftime('%Y-%m-%d %H:%M:%S')
-
 def get_template_head(foldername):
     """
     get template head
     """
-
     # remove the dot (.) at the beginning of foldername
     if foldername.startswith('.'):
         if not foldername.startswith('/', 1):
@@ -164,19 +166,18 @@ def get_template_head(foldername):
         else:
             return get_template_head(foldername[1:])
 
-    with open("/src/template/head.html", "r", encoding="utf-8") as file:
+    with open(TEMPLATE_FOLDER + "head.html", "r", encoding="utf-8") as file:
         head = file.read()
     head = head.replace("{{foldername}}", foldername)
     return head
-
 
 def get_template_foot():
     """
     get template foot
     """
-    with open("/src/template/foot.html", "r", encoding="utf-8") as file:
+    with open(TEMPLATE_FOLDER + "foot.html", "r", encoding="utf-8") as file:
         foot = file.read()
-    foot = foot.replace("{{buildtime}}", dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    foot = foot.replace("{{buildtime}}", BUILD_DATE)
     return foot
 
 def get_icon_base64(filename):
@@ -185,7 +186,6 @@ def get_icon_base64(filename):
     """
     with open(ICON_FOLDER + get_icon_from_filename(filename), "rb") as file:
         return "data:image/png;base64," + base64.b64encode(file.read()).decode('ascii')
-
 
 def get_icon_from_filename(filename):
     """
@@ -196,7 +196,6 @@ def get_icon_from_filename(filename):
         if extension in i["extension"]:
             return i["icon"] + ".png"
     return "web-file.png"
-
 
 if __name__ == "__main__":
     main()
