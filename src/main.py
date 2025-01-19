@@ -104,14 +104,16 @@ def main():
                     key_name = (folder + path).replace("/.", "/").replace("./", "/").replace("//", "/")
                     fulldate = file_dates[key_name]
                     ext = filename.split(".")[-1]
-                    shortdate = dt.datetime.fromisoformat(fulldate).strftime('%Y-%m-%d')
+                    date_val = dt.datetime.fromisoformat(fulldate)
+                    longdate = date_val.strftime('%Y-%m-%d %H:%M:%S')
+                    shortdate = date_val.strftime('%Y-%m-%d')
                     f.write(
                         row.replace("{{icon}}", get_icon_base64(filename))
                             .replace("{{type}}", ext)
                             .replace("{{href}}", filename)
                             .replace("{{filename}}", filename)
                             .replace("{{sortdate}}", fulldate)
-                            .replace("{{fulldate}}", fulldate)
+                            .replace("{{fulldate}}", longdate)
                             .replace("{{shortdate}}", shortdate)
                             .replace("{{bytes}}", str(os.path.getsize(path)))
                             .replace("{{size}}", get_file_size(path))
