@@ -26,15 +26,14 @@ BUILD_DATE_RSS = dt.datetime.now().strftime(RSS_DT_FORMAT)
 BUILD_DATE_ATOM = dt.datetime.now().strftime(ATOM_DT_FORMAT)
 RX_FILENAME = r'[a-z0-9-]+\.[a-z]+$'
 TRUE_VALS = ['true', '1', 't', 'y', 'yes', 'ok']
-CNAME = "localhost"
-
-do_rss = False
-do_atom = False
 
 def main():
     """
     main function
     """
+    do_rss = False
+    do_atom = False
+    CNAME = "localhost"
     try:
         cname_path = os.path.join('.', 'CNAME')
         with open(cname_path, 'r', encoding="utf-8") as cname:
@@ -108,7 +107,7 @@ def main():
             with open(os.path.join(dirname, 'index.html'), 'w', encoding="utf-8") as f:
                 folder_path = get_clean_file_path("/" + folder + dirname + "/").removesuffix("/")
                 f.write("\n".join([
-                    get_template_head(folder_path),
+                    get_template_head(folder_path, do_rss, do_atom),
                     row.replace("{{icon}}", homeicon)
                         .replace("{{type}}", "home")
                         .replace("{{href}}", "../")
@@ -160,15 +159,15 @@ def main():
                             .replace("{{size}}", get_file_size(path))
                     )
 
-                f.write("\n".join([
-                    get_template_foot(folder_path),
-                ]))
+                f.write("\n")
+                f.write(get_template_foot(folder_path, do_rss, do_atom))
+                f.write("\n")                
 
     if do_rss:
+        print("do_rss is true")
         rss_row = ""
         with open(TEMPLATE_RSS_FOLDER + "row.html", "r", encoding="utf-8") as file:
             rss_row = file.read()
-        print("do_rss is true")
         for dirname, dirnames, filenames in os.walk('.'):
             if 'rss.xml' in filenames:
                 print("rss.xml already exists, skipping...")
@@ -231,7 +230,7 @@ def get_file_size(filepath):
         return str(round((size / 1024 / 1024 / 1024), 2)) + " GB"
     return str(size)
 
-def get_template_head(foldername):
+def get_template_head(foldername, do_rss, do_atom):
     """
     get template head
     """
@@ -251,7 +250,7 @@ def get_template_head(foldername):
         head = head.replace("{{atom}}", "").replace("{{atomlink}}", "")
     return head
 
-def get_template_foot(foldername):
+def get_template_foot(foldername, do_rss, do_atom):
     """
     get template foot
     """
