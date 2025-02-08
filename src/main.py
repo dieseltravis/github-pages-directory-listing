@@ -37,7 +37,7 @@ def main():
     try:
         cname_path = os.path.join('.', 'CNAME')
         with open(cname_path, 'r', encoding="utf-8") as cname:
-            CNAME = cname.read()
+            CNAME = re.sub('\s+', '', cname.read())
     except OSError:
         print("Cannot find CNAME file at '" + cname_path + "'")
     url_base = "https://" + CNAME + "/"
