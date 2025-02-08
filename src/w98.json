@@ -3,60 +3,104 @@
         "icon": "img-gif",
         "extension": [
             ".gif"
-        ]
+        ],
+        "mime": "image/gif"
     },
     {
         "icon": "img-jpg",
         "extension": [
-            ".jpg",
-            ".jpeg",
-            ".jpe"
-        ]
+            ".jpg", ".jpeg", ".jpe",
+            ".jif", ".jfif",
+            ".pjpeg", ".pjp"
+        ],
+        "mime": "image/jpeg"
+    },
+    {
+        "icon": "img-webp",
+        "extension": [
+            ".webp"
+        ],
+        "mime": "image/webp"
+    },
+    {
+        "icon": "img-png",
+        "extension": [
+            ".png"
+        ],
+        "mime": "image/png"
+    },
+    {
+        "icon": "img-svg",
+        "extension": [
+            ".svg"
+        ],
+        "mime": "image/svg+xml"
+    },
+    {
+        "icon": "img-bmp",
+        "extension": [
+            ".bmp"
+        ],
+        "mime": "image/bmp"
     },
     {
         "icon": "img-kodak",
         "extension": [
-            ".bmp",
             ".tiff",
             ".tif"
-        ]
-    },
-    {
-        "icon": "img-other",
-        "extension": [
-            ".psd",
-            ".ai",
-            ".ico",
-            ".png",
-            ".webp"
-        ]
+        ],
+        "mime": "image/tiff"
     },
     {
         "icon": "img-wmf",
         "extension": [
-            ".wmf",
-            ".svg"
-        ]
+            ".wmf"
+        ],
+        "mime": "windows/metafile"
+    },
+    {
+        "icon": "text-html",
+        "extension": [
+            ".html",
+            ".htm"
+        ],
+        "mime": "text/html"
+    },
+    {
+        "icon": "text-txt",
+        "extension": [
+            ".txt",
+            ".text",
+            ".log"
+        ],
+        "mime": "text/plain"
+    },
+    {
+        "icon": "text-md",
+        "extension": [
+            ".md"
+        ],
+        "mime": "text/markdown"
     },
     {
         "icon": "web-file",
         "extension": [
-            ".html",
-            ".md",
-            ".txt",
             ".pdf"
-        ]
+        ],
+        "mime": "application/pdf"
     },
     {
         "icon": "dir-folder",
         "extension": [
             ".folder"
-        ]
+        ],
+        "mime": "text/html"
     },
     {
         "icon": "dir-pc",
         "extension": [
             ".folder-home"
-        ]
+        ],
+        "mime": "text/html"
     }
 ]
