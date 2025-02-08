@@ -235,7 +235,7 @@ def get_template_head(foldername):
     """
     get template head
     """
-    foldername = get_normalized_folder(get_normalized_folder)
+    foldername = get_normalized_folder(foldername)
     with open(TEMPLATE_FOLDER + "head.html", "r", encoding="utf-8") as file:
         head = file.read()
     head = head.replace("{{foldername}}", foldername)
@@ -255,7 +255,7 @@ def get_template_foot(foldername):
     """
     get template foot
     """
-    foldername = get_normalized_folder(get_normalized_folder)
+    foldername = get_normalized_folder(foldername)
     with open(TEMPLATE_FOLDER + "foot.html", "r", encoding="utf-8") as file:
         foot = file.read()
     foot = foot.replace("{{buildtime}}", BUILD_DATE)
@@ -273,7 +273,7 @@ def get_rss_template_head(foldername, rsslink, sitelink, lastdate):
     """
     get RSS template head
     """
-    foldername = get_normalized_folder(get_normalized_folder)
+    foldername = get_normalized_folder(foldername)
     with open(TEMPLATE_RSS_FOLDER + "head.html", "r", encoding="utf-8") as file:
         head = file.read()
     head = head.replace("{{foldername}}", foldername).replace("{{rsslink}}", rsslink).replace("{{sitelink}}", sitelink).replace("{{lastdate}}", lastdate)
