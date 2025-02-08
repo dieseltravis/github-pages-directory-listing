@@ -186,25 +186,27 @@ def main():
                     filenames.sort()
                     # TODO: it would be nice to sort by date, recent on top
                     for filename in filenames:
-                        path = (dirname == '.' and filename or dirname + '/' + filename)
-                        key_name = get_clean_file_path(folder + path)
-                        fulldate = file_dates[key_name]
-                        ext = filename.split(".")[-1]
-                        date_val = dt.datetime.fromisoformat(fulldate)
-                        filepubdate = date_val.strftime(RSS_DT_FORMAT)
-                        shortdate = date_val.strftime(SHORT_DT_FORMAT)
-                        filemime = get_mime_from_filename(filename)
-                        # filelink should be full absolute
-                        filelink = url_base + key_name
-                        f.write(
-                            rss_row.replace("{{filelink}}", filelink)
-                                .replace("{{filename}}", filename)
-                                .replace("{{filepubdate}}", filepubdate)
-                                .replace("{{filedate}}", shortdate)
-                                .replace("{{bytes}}", str(os.path.getsize(path)))
-                                .replace("{{size}}", get_file_size(path))
-                                .replace("{{filemime}}", filemime)
-                        )
+                        # skip generated HTML files
+                        if not filename.endswith("index.html"):
+                            path = (dirname == '.' and filename or dirname + '/' + filename)
+                            key_name = get_clean_file_path(folder + path)
+                            fulldate = file_dates[key_name]
+                            ext = filename.split(".")[-1]
+                            date_val = dt.datetime.fromisoformat(fulldate)
+                            filepubdate = date_val.strftime(RSS_DT_FORMAT)
+                            shortdate = date_val.strftime(SHORT_DT_FORMAT)
+                            filemime = get_mime_from_filename(filename)
+                            # filelink should be full absolute
+                            filelink = url_base + key_name
+                            f.write(
+                                rss_row.replace("{{filelink}}", filelink)
+                                    .replace("{{filename}}", filename)
+                                    .replace("{{filepubdate}}", filepubdate)
+                                    .replace("{{filedate}}", shortdate)
+                                    .replace("{{bytes}}", str(os.path.getsize(path)))
+                                    .replace("{{size}}", get_file_size(path))
+                                    .replace("{{filemime}}", filemime)
+                            )
 
                     f.write("\n".join([
                         get_rss_template_foot(folder_path),
