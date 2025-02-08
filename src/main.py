@@ -35,6 +35,14 @@ def main():
     """
     main function
     """
+    try:
+        cname_path = os.path.join('.', 'CNAME')
+        with open(cname_path, 'r', encoding="utf-8") as cname:
+            CNAME = cname
+    except OSError:
+        print("Cannot find CNAME file at '" + cname_path + "'")
+    url_base = "https://" + CNAME + "/"
+
     folder = ""
     file_dates = {}
     folder_dates = {}
@@ -85,15 +93,6 @@ def main():
     else:
         print("no directory specified")
         sys.exit()
-
-    try:
-        cname_path = os.path.join('.', 'CNAME')
-        with open(cname_path, 'r', encoding="utf-8") as cname:
-            CNAME = cname
-    except OSError:
-        print("Cannot find CNAME file at '" + cname_path + "'")
-
-    url_base = "https://" + CNAME + "/"
         
     row = ""
     with open(TEMPLATE_FOLDER + "row.html", "r", encoding="utf-8") as file:
@@ -186,7 +185,7 @@ def main():
                     f.write("\n")
                     # sort filenames alphabetically
                     filenames.sort()
-                    # TODO: sort by date, recent on top
+                    # TODO: it would be nice to sort by date, recent on top
                     for filename in filenames:
                         path = (dirname == '.' and filename or dirname + '/' + filename)
                         key_name = get_clean_file_path(folder + path)
