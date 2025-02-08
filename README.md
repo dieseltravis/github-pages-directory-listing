@@ -98,7 +98,7 @@ jobs:
           FOLDER: data    #directory to generate index
           FILE_DATES: ${{ env.FILE_DATES }}
 ```
-#### Add RSS
+#### Add RSS feed
 ```
       - name: Generate Directory Listings
         uses: dieseltravis/github-pages-directory-listing@dieseltravis-html
