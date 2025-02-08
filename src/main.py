@@ -207,10 +207,9 @@ def main():
                                     .replace("{{size}}", get_file_size(path))
                                     .replace("{{filemime}}", filemime)
                             )
-
-                    f.write("\n".join([
-                        get_rss_template_foot(folder_path),
-                    ]))
+                    f.write("\n")
+                    f.write(get_rss_template_foot())
+                    f.write("\n") 
     if do_atom:
         print("TODO: Atom")
 
