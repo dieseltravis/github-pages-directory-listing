@@ -17,6 +17,7 @@ Generate Directory Listings for Github Pages using Github Actions.
 * very basic html, css, javascript sorting
 * old fashioned icons for images
 * file dates use commit date from git
+* RSS/Atom support
 
 ## Usage
 
@@ -45,6 +46,8 @@ jobs:
         with:
           FOLDER: foldername      #directory to generate index
           FILE_DATES: ${{ env.FILE_DATES }}
+          DO_RSS: true
+          DO_ATOM: false
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -94,6 +97,15 @@ jobs:
         with:
           FOLDER: data    #directory to generate index
           FILE_DATES: ${{ env.FILE_DATES }}
+```
+#### Add RSS
+```
+      - name: Generate Directory Listings
+        uses: dieseltravis/github-pages-directory-listing@dieseltravis-html
+        with:
+          FOLDER: data    #directory to generate index
+          FILE_DATES: ${{ env.FILE_DATES }}
+          DO_RSS: true
 ```
 #### Refer here for more options: https://github.com/marketplace/actions/checkout
 

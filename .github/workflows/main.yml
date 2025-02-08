@@ -25,6 +25,8 @@ jobs:
         with:
           FOLDER: data
           FILE_DATES: ${{ env.FILE_DATES }}
+          DO_RSS: false
+          DO_ATOM: false
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1

@@ -15,10 +15,21 @@ with open('/src/w98.json', encoding="utf-8") as json_file:
     data = json.load(json_file)
 
 TEMPLATE_FOLDER = "/src/template/"
+TEMPLATE_RSS_FOLDER = "/src/template/rss/"
+TEMPLATE_ATOM_FOLDER = "/src/template/atom/"
 SHORT_DT_FORMAT = '%Y-%m-%d'
 LONG_DT_FORMAT = '%Y-%m-%d %H:%M:%S'
+RSS_DT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
+ATOM_DT_FORMAT = '%Y%m%dT%H%M%S.%fZ'
 BUILD_DATE = dt.datetime.now().strftime(LONG_DT_FORMAT)
+BUILD_DATE_RSS = dt.datetime.now().strftime(RSS_DT_FORMAT)
+BUILD_DATE_ATOM = dt.datetime.now().strftime(ATOM_DT_FORMAT)
 RX_FILENAME = r'[a-z0-9-]+\.[a-z]+$'
+TRUE_VALS = ['true', '1', 't', 'y', 'yes', 'ok']
+CNAME = "localhost"
+
+do_rss = False
+do_atom = False
 
 def main():
     """
@@ -63,10 +74,27 @@ def main():
         else:
             print("no FILE_DATES specified")
             sys.exit()
+        if len(sys.argv) > 3:
+            do_rss_input = sys.argv[3]
+            print("parsing do_rss " + do_rss_input)
+            do_rss = do_rss_input.lower() in TRUE_VALS
+        if len(sys.argv) > 4:
+            do_atom_input = sys.argv[4]
+            print("parsing do_atom " + do_atom_input)
+            do_atom = do_atom_input.lower() in TRUE_VALS
     else:
         print("no directory specified")
         sys.exit()
 
+    try:
+        cname_path = os.path.join('.', 'CNAME')
+        with open(cname_path, 'r', encoding="utf-8") as cname:
+            CNAME = cname
+    except OSError:
+        print("Cannot find CNAME file at '" + cname_path + "'")
+
+    url_base = "https://" + CNAME + "/"
+        
     row = ""
     with open(TEMPLATE_FOLDER + "row.html", "r", encoding="utf-8") as file:
         row = file.read()
@@ -79,8 +107,9 @@ def main():
         else:
             print("index.html does not exist, generating")
             with open(os.path.join(dirname, 'index.html'), 'w', encoding="utf-8") as f:
+                folder_path = get_clean_file_path("/" + folder + dirname + "/").removesuffix("/")
                 f.write("\n".join([
-                    get_template_head(get_clean_file_path("/" + folder + dirname + "/").removesuffix("/")),
+                    get_template_head(folder_path),
                     row.replace("{{icon}}", homeicon)
                         .replace("{{type}}", "home")
                         .replace("{{href}}", "../")
@@ -133,9 +162,57 @@ def main():
                     )
 
                 f.write("\n".join([
-                    get_template_foot(),
+                    get_template_foot(folder_path),
                 ]))
 
+    if do_rss:
+        rss_row = ""
+        with open(TEMPLATE_RSS_FOLDER + "row.html", "r", encoding="utf-8") as file:
+            rss_row = file.read()
+        print("do_rss is true")
+        for dirname, dirnames, filenames in os.walk('.'):
+            if 'rss.xml' in filenames:
+                print("rss.xml already exists, skipping...")
+            else:
+                print("rss.xml does not exist, generating")
+                with open(os.path.join(dirname, 'rss.xml'), 'w', encoding="utf-8") as f:
+                    folder_path = get_clean_file_path("/" + folder + dirname + "/").removesuffix("/")
+                    # site_link is full absolute link to folder
+                    site_link = url_base + folder_path.removeprefix("/")
+                    # rss_link is full absolute link to rss.xml
+                    rss_link = site_link + "/rss.xml"
+                    
+                    f.write(get_rss_template_head(folder_path, rss_link, site_link, BUILD_DATE_RSS))
+                    f.write("\n")
+                    # sort filenames alphabetically
+                    filenames.sort()
+                    # TODO: sort by date, recent on top
+                    for filename in filenames:
+                        path = (dirname == '.' and filename or dirname + '/' + filename)
+                        key_name = get_clean_file_path(folder + path)
+                        fulldate = file_dates[key_name]
+                        ext = filename.split(".")[-1]
+                        date_val = dt.datetime.fromisoformat(fulldate)
+                        filepubdate = date_val.strftime(RSS_DT_FORMAT)
+                        shortdate = date_val.strftime(SHORT_DT_FORMAT)
+                        filemime = get_mime_from_filename(filename)
+                        # filelink should be full absolute
+                        filelink = url_base + key_name
+                        f.write(
+                            rss_row.replace("{{filelink}}", filelink)
+                                .replace("{{filename}}", filename)
+                                .replace("{{filepubdate}}", filepubdate)
+                                .replace("{{filedate}}", shortdate)
+                                .replace("{{bytes}}", str(os.path.getsize(path)))
+                                .replace("{{size}}", get_file_size(path))
+                                .replace("{{filemime}}", filemime)
+                        )
+
+                    f.write("\n".join([
+                        get_rss_template_foot(folder_path),
+                    ]))
+    if do_atom:
+        print("TODO: Atom")
 
 def get_clean_file_path(path):
     return path.replace("/.", "/").replace("./", "/").replace("//", "/")
@@ -159,26 +236,66 @@ def get_template_head(foldername):
     """
     get template head
     """
-    # remove the dot (.) at the beginning of foldername
-    if foldername.startswith('.'):
-        if not foldername.startswith('/', 1):
-            return get_template_head('/' + foldername[1:])
-        else:
-            return get_template_head(foldername[1:])
-
+    foldername = get_normalized_folder(get_normalized_folder)
     with open(TEMPLATE_FOLDER + "head.html", "r", encoding="utf-8") as file:
         head = file.read()
     head = head.replace("{{foldername}}", foldername)
+    if do_rss:
+        head = head.replace("{{rss}}", "<link rel='alternate' type='application/rss+xml' title='RSS feed for " + foldername + "' href='rss.xml' />")
+        head = head.replace("{{rsslink}}", "<a rel='alternate' type='application/rss+xml' title='RSS feed for " + foldername + "' href='rss.xml'><img src='/i/rss.svg' alt='RSS icon' width='16' height='16' /></a>")
+    else:
+        head = head.replace("{{rss}}", "").replace("{{rsslink}}", "")
+    if do_atom:
+        head = head.replace("{{atom}}", "<link rel='alternate' type='application/atom+xml' title='Atom feed for " + foldername + "' href='atom.xml' />")
+        head = head.replace("{{atomlink}}", "<a rel='alternate' type='application/atom+xml' title='Atom feed for " + foldername + "' href='atom.xml'><img src='/i/atom.svg' alt='ATOM icon' width='16' height='16' /></a>")
+    else:
+        head = head.replace("{{atom}}", "").replace("{{atomlink}}", "")
     return head
 
-def get_template_foot():
+def get_template_foot(foldername):
     """
     get template foot
     """
+    foldername = get_normalized_folder(get_normalized_folder)
     with open(TEMPLATE_FOLDER + "foot.html", "r", encoding="utf-8") as file:
         foot = file.read()
     foot = foot.replace("{{buildtime}}", BUILD_DATE)
+    if do_rss:
+        foot = foot.replace("{{rsslink}}", "<a rel='alternate' type='application/rss+xml' title='RSS feed for " + foldername + "' href='rss.xml'><img src='/i/rss.svg' alt='RSS icon' width='16' height='16' /></a>")
+    else:
+        foot = foot.replace("{{rsslink}}", "")
+    if do_atom:
+        foot = foot.replace("{{atomlink}}", "<a rel='alternate' type='application/atom+xml' title='Atom feed for " + foldername + "' href='atom.xml'><img src='/i/atom.svg' alt='ATOM icon' width='16' height='16' /></a>")
+    else:
+        foot = foot.replace("{{atomlink}}", "")
     return foot
+
+def get_rss_template_head(foldername, rsslink, sitelink, lastdate):
+    """
+    get RSS template head
+    """
+    foldername = get_normalized_folder(get_normalized_folder)
+    with open(TEMPLATE_RSS_FOLDER + "head.html", "r", encoding="utf-8") as file:
+        head = file.read()
+    head = head.replace("{{foldername}}", foldername).replace("{{rsslink}}", rsslink).replace("{{sitelink}}", sitelink).replace("{{lastdate}}", lastdate)
+    return head
+
+def get_rss_template_foot():
+    """
+    get RSS template foot
+    """
+    with open(TEMPLATE_RSS_FOLDER + "foot.html", "r", encoding="utf-8") as file:
+        foot = file.read()
+    return foot
+
+def get_normalized_folder(foldername):
+    # remove the dot (.) at the beginning of foldername
+    if foldername.startswith('.'):
+        if not foldername.startswith('/', 1):
+            return get_normalized_folder('/' + foldername[1:])
+        else:
+            return get_normalized_folder(foldername[1:])
+    return foldername
 
 def get_icon_base64(filename):
     """
@@ -196,6 +313,16 @@ def get_icon_from_filename(filename):
         if extension in i["extension"]:
             return i["icon"] + ".png"
     return "web-file.png"
+
+def get_mime_from_filename(filename):
+    """
+    get MIME from filename
+    """
+    extension = "." + filename.split(".")[-1]
+    for m in data:
+        if extension in m["extension"]:
+            return m["mime"]
+    return "application/octet"
 
 if __name__ == "__main__":
     main()

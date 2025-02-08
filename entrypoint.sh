@@ -1,2 +1,2 @@
 #!/bin/sh -l
-/src/main.py $1/. "$2"
+/src/main.py $1/. "$2" $3 $4
