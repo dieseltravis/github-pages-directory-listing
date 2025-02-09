@@ -14,16 +14,16 @@ ICON_FOLDER = "/src/w98/"
 with open('/src/w98.json', encoding="utf-8") as json_file:
     data = json.load(json_file)
 
+NOW = dt.datetime.now(dt.timezone.utc)
 TEMPLATE_FOLDER = "/src/template/"
 TEMPLATE_RSS_FOLDER = "/src/template/rss/"
 TEMPLATE_ATOM_FOLDER = "/src/template/atom/"
 SHORT_DT_FORMAT = '%Y-%m-%d'
 LONG_DT_FORMAT = '%Y-%m-%d %H:%M:%S'
 RSS_DT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
-ATOM_DT_FORMAT = '%Y%m%dT%H%M%S.%fZ'
-BUILD_DATE = dt.datetime.now().strftime(LONG_DT_FORMAT)
-BUILD_DATE_RSS = dt.datetime.now().strftime(RSS_DT_FORMAT)
-BUILD_DATE_ATOM = dt.datetime.now().strftime(ATOM_DT_FORMAT)
+BUILD_DATE = NOW.strftime(LONG_DT_FORMAT)
+BUILD_DATE_RSS = NOW.strftime(RSS_DT_FORMAT)
+BUILD_DATE_ATOM = NOW.isoformat()
 RX_FILENAME = r'[a-z0-9-]+\.[a-z]+$'
 TRUE_VALS = ['true', '1', 't', 'y', 'yes', 'ok']
 
@@ -31,74 +31,139 @@ def main():
     """
     main function
     """
-    do_rss = False
-    do_atom = False
-    CNAME = "localhost"
+    cname = "localhost"
     try:
         cname_path = os.path.join('.', 'CNAME')
-        with open(cname_path, 'r', encoding="utf-8") as cname:
-            CNAME = re.sub('\s+', '', cname.read())
+        with open(cname_path, 'r', encoding="utf-8") as cname_file:
+            cname = re.sub(r'\s+', '', cname_file.read())
     except OSError:
         print("Cannot find CNAME file at '" + cname_path + "'")
-    url_base = "https://" + CNAME + "/"
+    url_base = "https://" + cname + "/"
 
     folder = ""
     file_dates = {}
     folder_dates = {}
-    file_dates_input = ""
-    
-    if len(sys.argv) > 1:
-        folder = sys.argv[1]
-        print("changing directory to " + folder)
-        # add error handling to chdir
-        try:
-            os.chdir(folder)
-        except OSError:
-            print("Cannot change the current working Directory")
-            sys.exit()
-        if len(sys.argv) > 2:
-            file_dates_input = sys.argv[2]
-            print("parsing " + file_dates_input)
-            for line in file_dates_input.split("!"):
-                if len(line) > 1:
-                    print("pair: " + line)
-                    pair = line.split("|")
-                    if len(pair) == 2:
-                        file_dates[pair[0]] = pair[1]
-                        # get just folder path
-                        folder_key = re.sub(RX_FILENAME, '', pair[0])
-                        print(folder_key)
-                        this_date = dt.datetime.fromisoformat(pair[1])
-                        # use latest file date for folder date
-                        if not (folder_key in folder_dates) or folder_dates[folder_key] < this_date:
-                            folder_dates[folder_key] = this_date
-                    else:
-                        print("bad format of file|date:" + line)
-                else:
-                    print("bad format of FILE_DATES item:" + line)
-            print("file_dates loaded: " + str(len(file_dates)))
-            print("folder_dates loaded: " + str(len(folder_dates)))
-        else:
-            print("no FILE_DATES specified")
-            sys.exit()
-        if len(sys.argv) > 3:
-            do_rss_input = sys.argv[3]
-            print("parsing do_rss " + do_rss_input)
-            do_rss = do_rss_input.lower() in TRUE_VALS
-        if len(sys.argv) > 4:
-            do_atom_input = sys.argv[4]
-            print("parsing do_atom " + do_atom_input)
-            do_atom = do_atom_input.lower() in TRUE_VALS
-    else:
-        print("no directory specified")
-        sys.exit()
-        
+    do_rss, do_atom, folder = init_params(file_dates, folder_dates)
+    gen_html(do_rss, do_atom, folder, file_dates, folder_dates)                
+    gen_rss(do_rss, url_base, folder, file_dates)
+    gen_atom(do_atom, url_base, folder, file_dates)
+
+def gen_atom(do_atom, url_base, folder, file_dates):
+    """
+    generate Atom XML files
+    """
+    if do_atom:
+        print("do_atom is true")
+        atom_row = ""
+        with open(TEMPLATE_ATOM_FOLDER + "row.html", "r", encoding="utf-8") as file:
+            atom_row = file.read()
+        for dirname, dirnames, filenames in os.walk('.'):
+            print(dirnames)
+            if 'atom.xml' in filenames:
+                print("atom.xml already exists, skipping...")
+            else:
+                print("atom.xml does not exist, generating")
+                with open(os.path.join(dirname, 'atom.xml'), 'w', encoding="utf-8") as f:
+                    folder_path = get_clean_file_path("/" + folder + dirname + "/").removesuffix("/")
+                    # site_link is full absolute link to folder
+                    site_link = url_base + folder_path.removeprefix("/")
+                    # atom_link is full absolute link to atom.xml
+                    atom_link = site_link + "/atom.xml"
+                    
+                    f.write(get_atom_template_head(folder_path, atom_link, site_link, BUILD_DATE_ATOM, url_base))
+                    f.write("\n")
+                    # sort filenames alphabetically
+                    filenames.sort()
+                    # TODO: it would be nice to sort by date, recent on top
+                    for filename in filenames:
+                        # skip generated HTML files
+                        if not filename.endswith("index.html") and not filename.endswith("rss.xml"):
+                            path = (dirname == '.' and filename or dirname + '/' + filename)
+                            key_name = get_clean_file_path(folder + path)
+                            fulldate = file_dates[key_name]
+                            ext = filename.split(".")[-1]
+                            date_val = dt.datetime.fromisoformat(fulldate)
+                            filepubdate = date_val.isoformat()
+                            shortdate = date_val.strftime(SHORT_DT_FORMAT)
+                            # filelink should be full absolute
+                            filelink = url_base + key_name
+                            f.write(
+                                atom_row.replace("{{filelink}}", filelink)
+                                    .replace("{{filename}}", filename)
+                                    .replace("{{filepubdate}}", filepubdate)
+                                    .replace("{{filedate}}", shortdate)
+                                    .replace("{{bytes}}", str(os.path.getsize(path)))
+                                    .replace("{{size}}", get_file_size(path))
+                                    .replace("{{foldername}}", folder_path)
+                                    .replace("{{sitelink}}", site_link)
+                                    .replace("{{ext}}", ext)
+                            )
+                    f.write("\n")
+                    f.write(get_atom_template_foot())
+
+def gen_rss(do_rss, url_base, folder, file_dates):
+    """
+    generate RSS XML files
+    """
+    if do_rss:
+        print("do_rss is true")
+        rss_row = ""
+        with open(TEMPLATE_RSS_FOLDER + "row.html", "r", encoding="utf-8") as file:
+            rss_row = file.read()
+        for dirname, dirnames, filenames in os.walk('.'):
+            print(dirnames)
+            if 'rss.xml' in filenames:
+                print("rss.xml already exists, skipping...")
+            else:
+                print("rss.xml does not exist, generating")
+                with open(os.path.join(dirname, 'rss.xml'), 'w', encoding="utf-8") as f:
+                    folder_path = get_clean_file_path("/" + folder + dirname + "/").removesuffix("/")
+                    # site_link is full absolute link to folder
+                    site_link = url_base + folder_path.removeprefix("/")
+                    # rss_link is full absolute link to rss.xml
+                    rss_link = site_link + "/rss.xml"
+                    
+                    f.write(get_rss_template_head(folder_path, rss_link, site_link, BUILD_DATE_RSS))
+                    f.write("\n")
+                    # sort filenames alphabetically
+                    filenames.sort()
+                    # TODO: it would be nice to sort by date, recent on top
+                    for filename in filenames:
+                        # skip generated HTML files
+                        if not filename.endswith("index.html"):
+                            path = (dirname == '.' and filename or dirname + '/' + filename)
+                            key_name = get_clean_file_path(folder + path)
+                            fulldate = file_dates[key_name]
+                            ext = filename.split(".")[-1]
+                            date_val = dt.datetime.fromisoformat(fulldate)
+                            filepubdate = date_val.strftime(RSS_DT_FORMAT)
+                            shortdate = date_val.strftime(SHORT_DT_FORMAT)
+                            filemime = get_mime_from_filename(filename)
+                            # filelink should be full absolute
+                            filelink = url_base + key_name
+                            f.write(
+                                rss_row.replace("{{filelink}}", filelink)
+                                    .replace("{{filename}}", filename)
+                                    .replace("{{filepubdate}}", filepubdate)
+                                    .replace("{{filedate}}", shortdate)
+                                    .replace("{{bytes}}", str(os.path.getsize(path)))
+                                    .replace("{{size}}", get_file_size(path))
+                                    .replace("{{filemime}}", filemime)
+                                    .replace("{{ext}}", ext)
+                            )
+                    f.write("\n")
+                    f.write(get_rss_template_foot())
+
+def gen_html(do_rss, do_atom, folder, file_dates, folder_dates):
+    """
+    generate index HTML files
+    """
     row = ""
     with open(TEMPLATE_FOLDER + "row.html", "r", encoding="utf-8") as file:
         row = file.read()
     homeicon = get_icon_base64("o.folder-home")
     foldericon = get_icon_base64("o.folder")
-    
+
     for dirname, dirnames, filenames in os.walk('.'):
         if 'index.html' in filenames:
             print("index.html already exists, skipping...")
@@ -161,101 +226,65 @@ def main():
 
                 f.write("\n")
                 f.write(get_template_foot(folder_path, do_rss, do_atom))
-                f.write("\n")                
 
-    if do_rss:
-        print("do_rss is true")
-        rss_row = ""
-        with open(TEMPLATE_RSS_FOLDER + "row.html", "r", encoding="utf-8") as file:
-            rss_row = file.read()
-        for dirname, dirnames, filenames in os.walk('.'):
-            if 'rss.xml' in filenames:
-                print("rss.xml already exists, skipping...")
-            else:
-                print("rss.xml does not exist, generating")
-                with open(os.path.join(dirname, 'rss.xml'), 'w', encoding="utf-8") as f:
-                    folder_path = get_clean_file_path("/" + folder + dirname + "/").removesuffix("/")
-                    # site_link is full absolute link to folder
-                    site_link = url_base + folder_path.removeprefix("/")
-                    # rss_link is full absolute link to rss.xml
-                    rss_link = site_link + "/rss.xml"
-                    
-                    f.write(get_rss_template_head(folder_path, rss_link, site_link, BUILD_DATE_RSS))
-                    f.write("\n")
-                    # sort filenames alphabetically
-                    filenames.sort()
-                    # TODO: it would be nice to sort by date, recent on top
-                    for filename in filenames:
-                        # skip generated HTML files
-                        if not filename.endswith("index.html"):
-                            path = (dirname == '.' and filename or dirname + '/' + filename)
-                            key_name = get_clean_file_path(folder + path)
-                            fulldate = file_dates[key_name]
-                            ext = filename.split(".")[-1]
-                            date_val = dt.datetime.fromisoformat(fulldate)
-                            filepubdate = date_val.strftime(RSS_DT_FORMAT)
-                            shortdate = date_val.strftime(SHORT_DT_FORMAT)
-                            filemime = get_mime_from_filename(filename)
-                            # filelink should be full absolute
-                            filelink = url_base + key_name
-                            f.write(
-                                rss_row.replace("{{filelink}}", filelink)
-                                    .replace("{{filename}}", filename)
-                                    .replace("{{filepubdate}}", filepubdate)
-                                    .replace("{{filedate}}", shortdate)
-                                    .replace("{{bytes}}", str(os.path.getsize(path)))
-                                    .replace("{{size}}", get_file_size(path))
-                                    .replace("{{filemime}}", filemime)
-                            )
-                    f.write("\n")
-                    f.write(get_rss_template_foot())
-                    f.write("\n") 
+def init_params(file_dates, folder_dates):
+    """
+    init params passed in
+    """
+    do_rss = False
+    do_atom = False
+    if len(sys.argv) > 1:
+        folder = sys.argv[1]
+        print("changing directory to " + folder)
+        # add error handling to chdir
+        try:
+            os.chdir(folder)
+        except OSError:
+            print("Cannot change the current working directory")
+            sys.exit()
+        if len(sys.argv) > 2:
+            parse_file_dates(file_dates, folder_dates)
+        else:
+            print("no FILE_DATES specified")
+            sys.exit()
+        if len(sys.argv) > 3:
+            do_rss_input = sys.argv[3]
+            print("parsing do_rss " + do_rss_input)
+            do_rss = do_rss_input.lower() in TRUE_VALS
+        if len(sys.argv) > 4:
+            do_atom_input = sys.argv[4]
+            print("parsing do_atom " + do_atom_input)
+            do_atom = do_atom_input.lower() in TRUE_VALS
+    else:
+        print("no directory specified")
+        sys.exit()
+    return do_rss,do_atom,folder
 
-    if do_atom:
-        print("do_atom is true")
-        atom_row = ""
-        with open(TEMPLATE_ATOM_FOLDER + "row.html", "r", encoding="utf-8") as file:
-            atom_row = file.read()
-        for dirname, dirnames, filenames in os.walk('.'):
-            if 'atom.xml' in filenames:
-                print("atom.xml already exists, skipping...")
+def parse_file_dates(file_dates, folder_dates):
+    """
+    parse file dates param
+    """
+    file_dates_input = sys.argv[2]
+    print("parsing " + file_dates_input)
+    for line in file_dates_input.split("!"):
+        if len(line) > 1:
+            print("pair: " + line)
+            pair = line.split("|")
+            if len(pair) == 2:
+                file_dates[pair[0]] = pair[1]
+                        # get just folder path
+                folder_key = re.sub(RX_FILENAME, '', pair[0])
+                print(folder_key)
+                this_date = dt.datetime.fromisoformat(pair[1])
+                        # use latest file date for folder date
+                if not (folder_key in folder_dates) or folder_dates[folder_key] < this_date:
+                    folder_dates[folder_key] = this_date
             else:
-                print("atom.xml does not exist, generating")
-                with open(os.path.join(dirname, 'atom.xml'), 'w', encoding="utf-8") as f:
-                    folder_path = get_clean_file_path("/" + folder + dirname + "/").removesuffix("/")
-                    # site_link is full absolute link to folder
-                    site_link = url_base + folder_path.removeprefix("/")
-                    # atom_link is full absolute link to atom.xml
-                    atom_link = site_link + "/atom.xml"
-                    
-                    f.write(get_atom_template_head(folder_path, atom_link, site_link, BUILD_DATE_ATOM, url_base))
-                    f.write("\n")
-                    # sort filenames alphabetically
-                    filenames.sort()
-                    # TODO: it would be nice to sort by date, recent on top
-                    for filename in filenames:
-                        # skip generated HTML files
-                        if not filename.endswith("index.html") and not filename.endswith("rss.xml"):
-                            path = (dirname == '.' and filename or dirname + '/' + filename)
-                            key_name = get_clean_file_path(folder + path)
-                            fulldate = file_dates[key_name]
-                            ext = filename.split(".")[-1]
-                            date_val = dt.datetime.fromisoformat(fulldate)
-                            filepubdate = date_val.strftime(ATOM_DT_FORMAT)
-                            shortdate = date_val.strftime(SHORT_DT_FORMAT)
-                            # filelink should be full absolute
-                            filelink = url_base + key_name
-                            f.write(
-                                atom_row.replace("{{filelink}}", filelink)
-                                    .replace("{{filename}}", filename)
-                                    .replace("{{filepubdate}}", filepubdate)
-                                    .replace("{{filedate}}", shortdate)
-                                    .replace("{{bytes}}", str(os.path.getsize(path)))
-                                    .replace("{{size}}", get_file_size(path))
-                            )
-                    f.write("\n")
-                    f.write(get_atom_template_foot())
-                    f.write("\n")
+                print("bad format of file|date:" + line)
+        else:
+            print("bad format of FILE_DATES item:" + line)
+    print("file_dates loaded: " + str(len(file_dates)))
+    print("folder_dates loaded: " + str(len(folder_dates)))
 
 def get_clean_file_path(path):
     """
