@@ -1,8 +1,11 @@
 <item>
 	<title>{{filename}}</title>
 	<link>{{filelink}}</link>
-	<description>{{filename}} {{filedate}} {{size}}</description>
+	<description>		
+		<pre>{{filename}} {{filedate}} {{size}}</pre>
+		<a href="{{filelink}}"><img src="{{filelink}}" alt="{{filename}}" /></a>
+	</description>
 	<pubDate>{{filepubdate}}</pubDate>
 	<guid isPermaLink="true">{{filelink}}</guid>
 	<enclosure url="{{filelink}}" length="{{bytes}}" type="{{filemime}}" />
- </item>
+</item>

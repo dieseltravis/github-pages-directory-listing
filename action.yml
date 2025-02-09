@@ -18,7 +18,7 @@ inputs:
     description: 'generate RSS feed'
     required: false
   DO_ATOM:
-    description: 'todo: generate Atom feed'
+    description: 'generate Atom feed (DO_RSS requires value when true)'
     required: false
 runs:
   using: 'docker'

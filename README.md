@@ -107,6 +107,16 @@ jobs:
           FILE_DATES: ${{ env.FILE_DATES }}
           DO_RSS: true
 ```
+#### Add Atom feed
+```
+      - name: Generate Directory Listings
+        uses: dieseltravis/github-pages-directory-listing@dieseltravis-html
+        with:
+          FOLDER: data    #directory to generate index
+          FILE_DATES: ${{ env.FILE_DATES }}
+          DO_RSS: true # or false
+          DO_ATOM: true
+```
 #### Refer here for more options: https://github.com/marketplace/actions/checkout
 
 ## Note
