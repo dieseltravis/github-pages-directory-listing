@@ -210,6 +210,7 @@ def main():
                     f.write("\n")
                     f.write(get_rss_template_foot())
                     f.write("\n") 
+
     if do_atom:
         print("do_atom is true")
         atom_row = ""
@@ -234,7 +235,7 @@ def main():
                     # TODO: it would be nice to sort by date, recent on top
                     for filename in filenames:
                         # skip generated HTML files
-                        if not filename.endswith("index.html"):
+                        if not filename.endswith("index.html") and not filename.endswith("rss.xml"):
                             path = (dirname == '.' and filename or dirname + '/' + filename)
                             key_name = get_clean_file_path(folder + path)
                             fulldate = file_dates[key_name]
