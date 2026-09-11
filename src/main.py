@@ -187,7 +187,7 @@ def gen_html(do_rss, do_atom, folder, file_dates, folder_dates):
                 dirnames.sort()
                 for subdirname in dirnames:
                     key_name = get_clean_file_path(folder + subdirname + "/")
-                    folder_date = folder_dates[key_name]
+                    folder_date = folder_dates.get(key_name, dt.datetime.now())
                     sort_folder_date = folder_date.strftime(LONG_DT_FORMAT)
                     short_folder_date = folder_date.strftime(SHORT_DT_FORMAT)
 
