@@ -4,16 +4,36 @@
 	<small><time>{{buildtime}}</time>{{rsslink}}{{atomlink}}</small>
 </footer>
 <script>
-	const t = (r, i) => r.children[i].dataset.sort || r.children[i].innerText || r.children[i].textContent;
-	const c = (i, d) => (a, b) => ((v1, v2) => v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2))(t(d ? a : b, i), t(d ? b : a, i));
-	document.querySelectorAll('thead th').forEach(th => {
-		const tbody = th.closest('table').querySelectorAll('tbody')[0];
-		th.addEventListener('click', () => {
-			Array.from(tbody.querySelectorAll('tr'))
-				.sort(c([...th.parentNode.children].indexOf(th), this.asc = !this.asc))
-				.forEach(tr => tbody.appendChild(tr));
+const d = document,
+	l = location,
+	h = { N: 0, M: 1, S: 2, A: true, D: false },
+	hc = { 0: 'N', 1: 'M', 2: 'S' },
+	tb = d.querySelector('tbody'),
+	rf = (acc, cur) => {
+		acc[cur[0]] = cur[1];
+		return acc;
+	},
+	qs = () => {
+		const q = l.search.substr(1).split(';').map(p => p.split('=')).reduce(rf, {});
+		if (q) s(h[q.C], h[q.O]);
+	},
+	t = (r, i) => r.children[i] ? r.children[i].dataset.sort || r.children[i].innerText || r.children[i].textContent : '',
+	c = (i, d) => (a, b) => ((v1, v2) => v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2))(t(d ? a : b, i), t(d ? b : a, i)),
+	s = (i, d) => Array.from(tb.querySelectorAll('tr')).sort(c(i, d)).forEach(tr => tb.appendChild(tr));
+	
+addEventListener('popstate', qs);
+d.querySelectorAll('thead th').forEach(th => {
+	th.addEventListener('click', () => {
+		const ti = [...th.parentNode.children].indexOf(th),
+			dir = this.asc = !this.asc,
+			ns = { C: hc[ti], O: dir ? 'A' : 'D' },
+			nl = l.href.split('?')[0] + '?C=' + ns.C + ';O=' + ns.O;
+
+		s(ti, dir);
+		history.pushState(ns, '', nl);
 	});
 });
+qs();
 </script>
 </body>
 </html>

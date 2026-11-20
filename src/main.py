@@ -196,6 +196,7 @@ def gen_html(do_rss, do_atom, folder, file_dates, folder_dates):
                             .replace("{{type}}", "folder")
                             .replace("{{href}}", subdirname)
                             .replace("{{filename}}", subdirname)
+                            # I don't remember why I did this, hmm...
                             .replace("{{sortdate}}", "-" + sort_folder_date)
                             .replace("{{fulldate}}", sort_folder_date)
                             .replace("{{shortdate}}", short_folder_date)
@@ -334,6 +335,7 @@ def get_template_foot(foldername, do_rss, do_atom):
     foldername = get_normalized_folder(foldername)
     with open(TEMPLATE_FOLDER + "foot.html", "r", encoding="utf-8") as file:
         foot = file.read()
+    #TODO: load js from a separate file so that it can be stored in a readable format and injected in a compressed format
     foot = foot.replace("{{buildtime}}", BUILD_DATE)
     if do_rss:
         foot = foot.replace("{{rsslink}}", "<a rel='alternate' type='application/rss+xml' title='RSS feed for " + foldername + "' href='rss.xml' class='rss'><img src='/i/rss.svg' alt='RSS icon' width='16' height='16' /></a>")
